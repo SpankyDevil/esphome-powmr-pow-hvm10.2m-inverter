@@ -22,27 +22,27 @@
 - 4513 : Load Active Power `measurement`
 - 4514 : Load Percent `measurement`
 - 4515 : Load Percent `measurement`
-- 4516 : Binary flags `binary_flags`
-- 4517 : stable value 520 `unclear significance`
-- 4518 : stable value 7912 `unclear significance`
-- 4519 : stable value 0 `unclear significance`
-- 4520 : stable value 2 `unclear significance`
-- 4521 : stable value 10200 (Device Maximal Power)
-- 4522 : stable value 10200 (Device Maximal Power)
-- 4523 : stable value 230 (Target Voltage)
-- 4524 : stable value 44 `unclear significance`
-- 4525 : stable value 480 `unclear significance`
-- 4526 : stable value 230 `unclear significance`
-- 4527 : stable value 500 `unclear significance`
-- 4528 : stable value 44 `unclear significance`
-- 4529 : stable value 0 `unclear significance`
+- 4516 : Load Percent 2 `measurement`
+- 4517 : Dual-channel Load CutOff Voltage `measurement`
+- 4518 : Main CPU Version `settings`
+- 4519 : Battery Equalization `settings`
+- 4520 : battery_configuration `settings`
+- 4521 : Nominal Load Power VA (Device Maximal Power)
+- 4522 : Nominal Load Power (Device Maximal Power)
+- 4523 : Nominal Grid Voltage (Target Voltage)
+- 4524 : Nominal Grid Current `measurement`
+- 4525 : Nominal Battery Voltage `measurement`
+- 4526 : Nominal Load Voltage `measurement`
+- 4527 : Nominal Load Frequency`measurement`
+- 4528 : Nominal Load Current `measurement`
+- 4529 : Inverter Faults `measurement`
 - 4530 : Error Code
     * `0x0000` No warning or error `measurement`
     * `0x0020` PV energy is low `measurement`
-- 4531 : stable value 5535 `unclear significance`
-- 4532 : stable value 5535 `unclear significance`
-- 4533 : stable value 5535 `unclear significance`
-- 4534 : stable value 55 `unclear significance`
+- 4531 : Reserved value 5535 `unclear significance`
+- 4532 : Reserved value 5535 `unclear significance`
+- 4533 : Reserved value 5535 `unclear significance`
+- 4534 : Reserved value 55 `unclear significance`
 - 4535 : Settings flags `binary_flags`
     * `0x0001` Record Fault Code `settings`
     * `0x0002` Battery Equalization `settings`
@@ -88,7 +88,7 @@
 - 4554 : Binary flags `binary_flags`
     * `0x0001` On Battery `measurement`
     * `0x0100` AC Active `measurement`
-    * `0x8000` AC Active `measurement`
+    * `0x8000` Grid Active `measurement`
 - 4555 : Charger Status *(0 - Off, 1 - Idle, 2 - Active)*
     * `0x000A` Discharging `measurement`
     * `0x000B` Charging `measurement`
@@ -97,10 +97,10 @@
 - 4556 : Status, reflects register 4555 in states 0x0B, 0x0C, 0x0D, but 0x00 instead of 0x0A `measurement`
 - 4557 : Internal temperature sensor `measurement`
 - 4558 : stable value 0 `unclear significance`
-- 4559 : stable value 0 `unclear significance`
-- 4560 : stable value 1 `unclear significance`
-- 4561 : stable value 1 `unclear significance`
-- 4562 : stable value 0 `unclear significance`
+- 4559 : Grid-tie Operation `settings`
+- 4560 : Grid-tie Current `measurement`
+- 4561 : LED Pattern Light `settings`
+- 4562 : Battery Equalization Activated Immediately Status `settings`
 - 4563 : PV2 Voltage `measurement`
 - 4564 : PV2 Power `measurement`
 
@@ -111,6 +111,7 @@
 | Register | Description                                                                         | HVM10.2M |
 |----------|-------------------------------------------------------------------------------------|----------|
 | 5002     | Buzzer Alarm (range 0-1, settings menu 18)                                          | +        |
+| 5003     | Power saving mode (range 0-1,)                                                      |          |
 | 5004     | Backlight control (range 0-1, settings menu 20)                                     | +        |
 | 5005     | Auto restart when overload occurs (range 0-1, settings menu 6)                      | +        |
 | 5006     | Auto restart when over temperature occurs (range 0-1, settings menu 7)              | +        |
@@ -118,14 +119,20 @@
 | 5008     | Auto return to default display screen (range 0-1, settings menu 19)                 | +        |
 | 5009     | Overload Bypass (range 0-1, settings menu 23)                                       | +        |
 | 5010     | Record fault code (range 0-1, settings menu 25)                                     | +        |
+| 5011     | Battery Equalization (range 0-1, settings menu 30)                                  | +        |
+| 5012     | Battery Equalization activated immediately (range 0-1, settings menu 36)            | +        |
+| 5013     | Reserve 1  Added functionality to write the full unit serial number                 |          |
+| 5014     | Reserve 2  Added functionality to write the full unit serial number                 |          |
+| 5015     | Reserve 3  Added functionality to write the full unit serial number                 |          |
+| 5016     | Restore Factory Defaults (range 0-1, settings menu 00)                              | +        |
 | 5017     | Charger Source Priority (range 0-2 (CSO, SNU, OSO), settings menu 16)               | +        |
 | 5018     | Output Source Priority (range 0-3 (USB, SUB, SBU, MKS), settings menu 1)            | +        |
 | 5019     | AC input voltage range (range 0-1 (90-280VAC, 170-280VAC), settings menu 3)         | +        |
 | 5020     | Battery type (range 0-5 (AGM, USE, LIB, LIC, LIP, LIL), settings menu 5)            | +        |
 | 5021     | Output frequency (range 0-1 (50 Hz, 60 Hz), settings menu 9)                        | +        |
-| 5022     | Max Total Charge Current (range 10-160 (step 10), settings menu 2)                             | +        |
-| 5023     | Output voltage (range 220, 230, 240, settings menu 10)                             | +        |
-| 5024     | Utility Charge Current (range 2, 10 - 140 (step 10), settings menu 11)             | +        |
+| 5022     | Max Total Charge Current (range 10-160 (step 10), settings menu 2)                  | +        |
+| 5023     | Output voltage (range 220, 230, 240, settings menu 10)                              | +        |
+| 5024     | Utility Charge Current (range 2, 10 - 140 (step 10), settings menu 11)              | +        |
 | 5025     | Comeback Utility Mode Voltage (SBU) (0.5 Volts step, settings menu 12)              | +        |
 | 5026     | Comeback Battery Mode Voltage (SBU) (0.5 Volts step, settings menu 13)              | +        |
 | 5027     | Bulk charging voltage (settings menu 26)                                            | +        |
@@ -135,3 +142,11 @@
 | 5031     | Battery equalized time (settings menu 33)                                           | +        |
 | 5032     | Battery equalized timeout (settings menu 34)                                        | +        |
 | 5033     | Equalization interval (settings menu 35)                                            | +        |
+| 5034     | GRID-tie operation (settings menu 37)                                               | +        |
+| 5035     | GRID-tie current (range 2-30, 0.2 Volts step, settings menu 38)                     | +        |
+| 5036     | LED Pattern Light (settings menu 39)                                                | +        |
+| 5037     | Dual Output (settings menu 410)                                                     | +        |
+| 5038     | Exit The Dual Output Voltage Point (range 40-52, 0.1 Volts step, settings menu 42)  | +        |
+| 50xx     | bms communication address (settings menu 43)                                        |          |
+| 50xx     | delayed grid connection (settings menu 44)                                          |          |
+| 50xx     | battery soc percentage disconnection voltage (settings menu 45)                     |          |
