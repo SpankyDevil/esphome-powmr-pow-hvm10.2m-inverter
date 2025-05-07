@@ -1,9 +1,10 @@
 uart:
   - id: uart_pzem
-    baud_rate: 9600
     tx_pin: ${pzem_tx_pin}
     rx_pin: ${pzem_rx_pin}
-#    debug:
+    baud_rate: 9600
+    #stop_bits: 1
+    debug:
 #      direction: BOTH
 #      dummy_receiver: false
 
@@ -13,39 +14,50 @@ modbus:
 
 sensor:
   - platform: pzemac
+    id: pzemac_1
+    address: 0x1
     modbus_id: modbus_pzem
-    update_interval: ${pzem_update_interval}
+    update_interval: ${pzem1_update_interval}
     voltage:
-      name: "Grid PZEM Voltage"
+      name: "PZEM-004T Grid Voltage"
       id: pzem_grid_voltage
-      internal: true
+#      internal: true
       filters:
         - &mafilter quantile:
             window_size: 5
             send_every: 1
             send_first_at: 1
             quantile: .9
-        - offset: ${pzem_voltage_offset}
+        - clamp:
+            min_value: 0
+            max_value: 300
+        - offset: ${pzem1_voltage_offset}
     current:
-      name: "Grid Current"
+      name: "PZEM-004T Grid Current"
       id: pzem_grid_current
       filters:
         - *mafilter
-        - offset: ${pzem_current_offset}
+        - clamp:
+            min_value: 0
+            max_value: 40
+        - offset: ${pzem1_current_offset}
     power:
-      name: "Grid Power"
+      name: "PZEM-004T Grid Active Power"
       id: pzem_grid_power
-      internal: true
+#      internal: true
       filters:
         - *mafilter
+        - clamp:
+            min_value: 0
+            max_value: 10000
     power_factor:
-      name: "Grid Power Factor"
+      name: "PZEM-004T Grid Power Factor"
       id: pzem_grid_power_factor
       filters:
         - *mafilter
 
   - platform: template
-    name: "Grid Power"
+    name: "PZEM-004T Grid Active Power"
     unit_of_measurement: "W"
     device_class: power
     state_class: measurement
@@ -53,3 +65,109 @@ sensor:
     update_interval: ${update_interval}
     lambda: |-
       return id(pzem_grid_current).state * id(pzem_grid_voltage).state * id(pzem_grid_power_factor).state;
+
+  - platform: total_daily_energy
+    power_id: pzem_grid_power
+    name: "PZEM-004T Grid Daily Energy"
+    filters:
+      - multiply: 0.001
+    unit_of_measurement: "kWh"
+    device_class: energy
+    state_class: total_increasing     
+
+  - platform: integration
+    name: 'PZEM-004T Grid Total Energy'
+    id: pzem_004t_grid_total_energy
+    sensor: pzem_grid_power
+    time_unit: h
+    filters:
+      - multiply: 0.001
+    unit_of_measurement: "kWh"
+    restore: true
+    state_class: total_increasing
+    device_class: energy
+
+  - platform: pzemac
+    id: pzemac_2
+    address: 0x2
+    modbus_id: modbus_pzem
+    update_interval: ${pzem2_update_interval}
+    voltage:
+      name: "PZEM-004T Load Voltage"
+      id: pzem_load_voltage
+      filters:
+        - clamp:
+            min_value: 0
+            max_value: 300
+        - offset: ${pzem2_voltage_offset}
+    current:
+      name: "PZEM-004T Load Current"
+      id: pzem_load_current
+      filters:
+        - clamp:
+            min_value: 0
+            max_value: 40
+        - offset: ${pzem2_current_offset}
+    power:
+      name: "PZEM-004T Load Active Power"
+      id: pzem_load_power
+      filters:
+        - clamp:
+            min_value: 0
+            max_value: 30000
+    power_factor:
+      name: "PZEM-004T Load Power Factor"
+      id: pzem_load_power_factor
+
+  - platform: template
+    name: "PZEM-004T Load Active Power"
+    unit_of_measurement: "W"
+    device_class: power
+    state_class: measurement
+    accuracy_decimals: 0
+    update_interval: ${update_interval}
+    lambda: |-
+      return id(pzem_load_current).state * id(pzem_load_voltage).state * id(pzem_load_power_factor).state;
+
+  - platform: integration
+    name: 'PZEM-004T Load Total Energy'
+    id: pzem_004t_load_total_energy
+    sensor: pzem_load_power
+    time_unit: h
+    filters:
+      - multiply: 0.001
+    unit_of_measurement: "kWh"
+    restore: true
+    state_class: total_increasing
+    device_class: energy
+
+  - platform: total_daily_energy
+    power_id: pzem_load_power
+    name: "PZEM-004T Load Daily Energy"
+    filters:
+      - multiply: 0.001
+    unit_of_measurement: "kWh"
+    device_class: energy
+    state_class: total_increasing 
+
+button:
+  - platform: template
+    name: "PZEM-004T Grid Total Energy Reset"
+    on_press:
+      then:
+        - sensor.integration.reset: pzem_004t_grid_total_energy
+
+  - platform: template
+    name: "PZEM-004T Load Total Energy Reset"
+    on_press:
+      then:
+        - sensor.integration.reset: pzem_004t_load_total_energy
+
+
+# interval:
+#   - interval: 6s
+#     then:
+#       - delay: 150ms
+#       - lambda: "id(pzemac_1).update();"
+#       - delay: 150ms
+#       - lambda: "id(pzemac_2).update();"
