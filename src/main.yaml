@@ -19,10 +19,3 @@ packages:
 
 logger:
   baud_rate: 0
-
-sensor:
-  - platform: internal_temperature
-    name: "Controller Temperature"
-    update_interval: 10s
-    state_class: measurement
-    device_class: temperature
