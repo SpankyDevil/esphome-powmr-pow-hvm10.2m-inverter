@@ -1,11 +1,22 @@
 sensor:
+
+#Uptime
   - platform: uptime
     name: "Uptime"
     entity_category: "diagnostic"
     device_class: duration
     update_interval: 60s
+    
+#ESP32 Controller WiFi Signal    
   - platform: wifi_signal
-    name: "RSSI"
+    name: "ESP32 ${node_name} RSSI"
     id: wifi_rssi
     entity_category: "diagnostic"
     update_interval: 60s
+
+#ESP32 Controller Temperature
+  - platform: internal_temperature
+    name: "ESP32 ${node_name} Temperature"
+    update_interval: 10s
+    state_class: measurement
+    device_class: temperature
